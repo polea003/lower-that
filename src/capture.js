@@ -10,7 +10,7 @@ const options = {
     quality: 100,
     output: "jpeg",
     callbackReturn: "base64",
-    device: "/dev/video1",
+    // device: "/dev/video1",
     // verbose: true,
 };
 
