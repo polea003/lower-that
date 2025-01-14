@@ -1,8 +1,9 @@
 import { SamsungTvRemote, Keys } from "samsung-tv-remote";
+import 'dotenv/config'
 
 const remote = new SamsungTvRemote({
-    ip: '192.168.0.13',
-    mac: 'e0:9d:13:ac:d4:a4'
+    ip: process.env.SAMSUNG_TV_IP_ADDRESS, 
+    mac: process.env.SAMSUNG_TV_MAC_ADDRESS
 })
 
 export async function toggleMute() {
