@@ -1,6 +1,6 @@
 # Lower That
 
-Use your webcam and multi-modal LLMs to analyze your tv images and automatically mute commercials during sporting events. Costs about $0.01/min.
+Use your webcam and multi-modal LLMs to analyze your tv images and automatically mute commercials during sporting events. Costs about $0.01/min when using gpt-4o-mini.
 
 ## Features
 
