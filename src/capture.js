@@ -1,6 +1,8 @@
 import NodeWebcam from "node-webcam";
 import { analyzeImage } from './token.js'
-import { toggleMute, isMuted } from "./samsung.js";
+import { toggleMute } from "./samsung.js";
+
+let isMuted = false
 
 const options = {
     width: 512, // 512 is max pixel width for 'low' resolution requests to openai api
@@ -21,8 +23,16 @@ export function captureImage() {
         } else { 
             const llmResponse = JSON.parse(await analyzeImage(data))
             console.log({ llmResponse })
-            if (!isMuted && llmResponse.is_commercial) toggleMute()
-            else if (isMuted && !llmResponse.is_commericial) toggleMute()
+            if (!isMuted && llmResponse.is_commercial) {
+                console.log('muting...')
+                toggleMute()
+                isMuted = true
+            } 
+            else if (isMuted && !llmResponse.is_commercial) {
+                console.log('unmuting...')
+                toggleMute()
+                isMuted = false
+            }
         }
     });
 }
