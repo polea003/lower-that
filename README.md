@@ -1,59 +1,58 @@
-# Lower That
+# 📺 Lower That
 
-Use your webcam and multi-modal LLMs to analyze your tv images and automatically mute commercials during sporting events. Costs about $0.01/min when using gpt-4o-mini.
+Automatically mute commercials during sporting events using your webcam and a multi-modal LLM (e.g., `gpt-4.1-nano`).
+**\~\$0.10/hour cost with `gpt-4.1-nano`.**
 
-## Features
+## 🚀 Features
 
-* Takes a webcam capture every 5 seconds.
-* Uses OpenAI's gpt-4o-mini to analyze images.
-* Supports controlling Samsung TV.
-* Optimized for Sporting Event Broadcasts.
-* Free and open source under MIT.
+* Captures webcam image every 5 seconds
+* Analyzes frames using **OpenAI’s `gpt-4.1-nano`**
+* Controls **Samsung TVs** (IP + MAC required)
+* Optimized for **sporting event broadcasts**
+* **MIT licensed** and fully open source
 
-## Setup
+## ⚙️ Setup
 
-### Access Credentials
+### 1. Configure Environment Variables
 
-Use environment variables to configure credentials for LLM providers.
+Copy the example file and fill in the required values:
 
 ```bash
 cp .env.example .env
 ```
 
-```bash
-OPENAI_API_KEY=
+Edit `.env` and provide your credentials:
+
+```env
+OPENAI_API_KEY=your_openai_api_key
+SAMSUNG_TV_IP_ADDRESS=your_tv_ip
+SAMSUNG_TV_MAC_ADDRESS=your_tv_mac
 ```
 
-See [samsung-tv-remote docs](https://www.npmjs.com/package/samsung-tv-remote) for how to find SAMSUNG_TV_IP_ADDRESS and SAMSUNG_TV_MAC_ADDRESS values.
+📘 Refer to the [`samsung-tv-remote` docs](https://www.npmjs.com/package/samsung-tv-remote) to find your Samsung TV's IP and MAC address.
 
-```bash
-SAMSUNG_TV_IP_ADDRESS=
-SAMSUNG_TV_MAC_ADDRESS=
-```
+> **First-time setup:** Your TV may prompt you to allow access — confirm to enable control.
 
-**Note: The first time running the program, your TV may prompt you to allow access for the program to control the tv.**
+### 2. Install Dependencies
 
-### Installation
-
-See system dependencies for [node-webcam](https://www.npmjs.com/package/node-webcam) and install, if necessary.
-
-Install dependencies:
+Ensure your system meets [node-webcam](https://www.npmjs.com/package/node-webcam) requirements, then install:
 
 ```bash
 npm install
 ```
 
-### Usage
+## ▶️ Usage
 
-Point webcam towards Samsung TV. Start the program:
+Point your webcam at the TV and run:
 
 ```bash
 npm start
 ```
 
-**Stop the program with ctrl-c. Running the program costs about $0.10/hr using gpt-4.1-nano. Don't forget to stop!**
+> 🔇 The program will automatically mute commercials during games.
+> 💸 **Reminder:** Using `gpt-4.1-nano` costs \~\$0.10/hour.
+> 🛑 Stop the program with `Ctrl+C`.
 
+## 🤝 Contributing
 
-## Contributing
-
-Contributions Welcome!
+PRs welcome! Bug fixes, improvements, and feature ideas are encouraged.
