@@ -1,32 +1,45 @@
-import { TokenJS } from 'token.js'
+import OpenAI from "openai";
 import { systemPrompt } from './prompts.js'
 
-const tokenjs = new TokenJS()
 
 export async function analyzeImage(image_url) {
+    const client = new OpenAI();
 
-  const completion = await tokenjs.chat.completions.create({
-    provider: 'openai',
-    model: 'gpt-4o-mini',
-    response_format: { type: "json_object" },
-    messages: [
-        {
-            role: "user",
-            content: [
-                { type: "text", text: systemPrompt },
-                {
-                    type: "image_url",
-                    image_url: {
-                        url: image_url,
+    const response = await client.responses.create({
+        model: "gpt-4.1-nano",
+        instructions: systemPrompt,
+        input: [
+            {
+                role: "user",
+                content: [
+                    {
+                        type: "input_image",
+                        image_url: image_url,
                         detail: "low",
                     },
+                ],
+            }
+        ],
+        store: false,
+        text: {
+            format: {
+                type: "json_schema",
+                name: "tv_analysis_result",
+                schema: {
+                    type: "object",
+                    properties: {
+                        image_description: { type: "string" },
+                        is_commercial: { type: "boolean" }
+                    },
+                    required: ["image_description", "is_commercial"],
+                    additionalProperties: false
                 },
-            ],
+                strict: true
+            }
         }
-    ],
-  })
-  console.log(completion)
-  //   console.log(completion.choices[0])
-  return completion.choices[0].message.content
+    });
+
+  console.log(response)
+  return response.output_text
 }
 
