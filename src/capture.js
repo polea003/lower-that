@@ -1,5 +1,5 @@
 import NodeWebcam from "node-webcam";
-import { analyzeImage } from './token.js'
+import { analyzeImage } from './analyze.js'
 import { toggleMute } from "./samsung.js";
 
 let isMuted = false
