@@ -51,7 +51,7 @@ Point webcam towards Samsung TV. Start the program:
 npm start
 ```
 
-**Stop the program with ctrl-c. Running the program costs about $0.01/min. Don't forget to stop!**
+**Stop the program with ctrl-c. Running the program costs about $0.10/hr using gpt-4.1-nano. Don't forget to stop!**
 
 
 ## Contributing
