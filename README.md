@@ -1,12 +1,12 @@
 # 📺 Lower That
 
-Automatically mute commercials during sporting events using your webcam and a multi-modal LLM (e.g., `gpt-4.1-nano`).
-**\~\$0.10/hour cost with `gpt-4.1-nano`.**
+Automatically mute commercials during sporting events using your webcam and a multi-modal LLM (e.g., `gpt-5-nano`).
+**\~\$0.10/hour cost with `gpt-5-nano`.**
 
 ## 🚀 Features
 
 * Captures webcam image every 5 seconds
-* Analyzes frames using **OpenAI’s `gpt-4.1-nano`**
+* Analyzes frames using **OpenAI's `gpt-5-nano`**
 * Controls **Samsung TVs** (IP + MAC required)
 * Optimized for **sporting event broadcasts**
 * **MIT licensed** and fully open source
@@ -18,7 +18,7 @@ Automatically mute commercials during sporting events using your webcam and a mu
 Copy the example file and fill in the required values:
 
 ```bash
-cp .env.example .env
+cp env.example .env
 ```
 
 Edit `.env` and provide your credentials:
@@ -50,7 +50,7 @@ npm start
 ```
 
 > 🔇 The program will automatically mute commercials during games.
-> 💸 **Reminder:** Using `gpt-4.1-nano` costs \~\$0.10/hour.
+> 💸 **Reminder:** Using `gpt-5-nano` costs \~\$0.10/hour.
 > 🛑 Stop the program with `Ctrl+C`.
 
 ## 🤝 Contributing

@@ -2,14 +2,14 @@
   "name": "lower-that",
   "type": "module",
   "version": "1.0.0",
-  "main": "src/main.js",
+  "main": "src/app.js",
   "scripts": {
-    "start": "node src/main.js",
+    "start": "node src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "patrick o'leary",
-  "license": "ISC",
+  "license": "MIT",
   "description": "",
   "dependencies": {
     "dotenv": "^17.2.1",
