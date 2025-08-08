@@ -1,8 +1,5 @@
 import NodeWebcam from "node-webcam";
-import { analyzeImage } from './analyze.js'
-import { toggleMute } from "./samsung.js";
 
-let isMuted = false
 
 const options = {
     width: 512, // 512 is max pixel width for 'low' resolution requests to openai api
@@ -17,22 +14,12 @@ const options = {
 const Webcam = NodeWebcam.create(options);
 
 export function captureImage() {
-    Webcam.capture("most_recent_capture", async function(err, data) {
-        if (err) {
-            console.error("Error capturing image:", err);
-        } else { 
-            const llmResponse = JSON.parse(await analyzeImage(data))
-            console.log({ llmResponse })
-            if (!isMuted && llmResponse.is_commercial) {
-                console.log('muting...')
-                toggleMute()
-                isMuted = true
-            } 
-            else if (isMuted && !llmResponse.is_commercial) {
-                console.log('unmuting...')
-                toggleMute()
-                isMuted = false
-            }
-        }
+  return new Promise((resolve, reject) => {
+    Webcam.capture("most_recent_capture", (err, data) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(data);  // data is your base64 string
     });
+  });
 }

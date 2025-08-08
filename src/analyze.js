@@ -1,13 +1,14 @@
 import OpenAI from "openai";
-import { systemPrompt } from './prompts.js'
+import { getSystemPrompt } from './prompts.js'
 
-
-export async function analyzeImage(image_url) {
+export async function analyzeImage(image_url, contentDescription) {
     const client = new OpenAI();
+    const systemPrompt = getSystemPrompt(contentDescription)
 
     const response = await client.responses.create({
-        model: "gpt-4.1-nano",
+        model: "gpt-5-nano",
         instructions: systemPrompt,
+        reasoning: { effort: "low" },
         input: [
             {
                 role: "user",
@@ -28,10 +29,10 @@ export async function analyzeImage(image_url) {
                 schema: {
                     type: "object",
                     properties: {
-                        image_description: { type: "string" },
-                        is_commercial: { type: "boolean" }
+                        tv_content_description: { type: "string" },
+                        should_mute_tv: { type: "boolean" }
                     },
-                    required: ["image_description", "is_commercial"],
+                    required: ["tv_content_description", "should_mute_tv"],
                     additionalProperties: false
                 },
                 strict: true
