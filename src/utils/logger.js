@@ -1,36 +1,37 @@
-class Logger {
-  constructor() {
-    this.logLevel = process.env.LOG_LEVEL || 'info';
-  }
+import { curry } from './functional.js';
 
-  _log(level, message, ...args) {
-    const timestamp = new Date().toISOString();
-    const prefix = `[${timestamp}] ${level.toUpperCase()}:`;
-    
-    if (args.length > 0) {
-      console.log(prefix, message, ...args);
-    } else {
-      console.log(prefix, message);
-    }
-  }
+const getLogLevel = () => process.env.LOG_LEVEL || 'info';
 
-  info(message, ...args) {
-    this._log('info', message, ...args);
-  }
+const createTimestamp = () => new Date().toISOString();
 
-  error(message, ...args) {
-    this._log('error', message, ...args);
-  }
+const formatLogMessage = curry((level, message, args) => {
+  const timestamp = createTimestamp();
+  const prefix = `[${timestamp}] ${level.toUpperCase()}:`;
+  return args.length > 0 ? [prefix, message, ...args] : [prefix, message];
+});
 
-  warn(message, ...args) {
-    this._log('warn', message, ...args);
-  }
+const shouldLog = curry((requiredLevel, currentLevel) => {
+  const levels = { error: 0, warn: 1, info: 2, debug: 3 };
+  return levels[currentLevel] >= levels[requiredLevel];
+});
 
-  debug(message, ...args) {
-    if (this.logLevel === 'debug') {
-      this._log('debug', message, ...args);
-    }
-  }
-}
+const logToConsole = (formattedMessage) => {
+  console.log(...formattedMessage);
+  return formattedMessage;
+};
 
-export const logger = new Logger();
+const createLogger = (level) => curry((logLevel, message, ...args) => {
+  if (shouldLog(logLevel)(getLogLevel())) {
+    const formatted = formatLogMessage(logLevel, message, args);
+    return logToConsole(formatted);
+  }
+});
+
+const log = createLogger();
+
+export const logger = {
+  info: log('info'),
+  error: log('error'),
+  warn: log('warn'),
+  debug: log('debug')
+};

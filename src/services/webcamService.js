@@ -1,46 +1,56 @@
 import NodeWebcam from 'node-webcam';
 import { WEBCAM_CONFIG, APP_CONFIG } from '../config/constants.js';
 import { logger } from '../utils/logger.js';
+import { tryCatch, tap } from '../utils/functional.js';
 
-class WebcamError extends Error {
-  constructor(message, cause) {
-    super(message);
-    this.name = 'WebcamError';
-    this.cause = cause;
-  }
-}
+const createWebcamError = (message, cause) => {
+  const error = new Error(message);
+  error.name = 'WebcamError';
+  error.cause = cause;
+  return error;
+};
 
-class WebcamService {
-  constructor() {
-    const options = {
-      width: WEBCAM_CONFIG.WIDTH,
-      height: WEBCAM_CONFIG.HEIGHT,
-      quality: WEBCAM_CONFIG.QUALITY,
-      output: WEBCAM_CONFIG.OUTPUT_FORMAT,
-      callbackReturn: 'base64'
-    };
+const createWebcamOptions = () => ({
+  width: WEBCAM_CONFIG.WIDTH,
+  height: WEBCAM_CONFIG.HEIGHT,
+  quality: WEBCAM_CONFIG.QUALITY,
+  output: WEBCAM_CONFIG.OUTPUT_FORMAT,
+  callbackReturn: 'base64'
+});
 
-    this.webcam = NodeWebcam.create(options);
-    logger.info('WebcamService initialized with options:', options);
-  }
+const createWebcam = (options) => {
+  logger.info('Creating webcam with options:', options);
+  return NodeWebcam.create(options);
+};
 
-  async captureFrame() {
-    logger.debug('Capturing webcam frame...');
-    
-    return new Promise((resolve, reject) => {
-      this.webcam.capture(APP_CONFIG.CAPTURE_FILENAME, (error, base64Data) => {
-        if (error) {
-          const webcamError = new WebcamError('Failed to capture webcam frame', error);
-          logger.error('Webcam capture failed:', error);
-          reject(webcamError);
-          return;
-        }
-
-        logger.debug('Webcam frame captured successfully');
-        resolve(base64Data);
-      });
+const promisifyCapture = (webcam) => (filename) => 
+  new Promise((resolve, reject) => {
+    webcam.capture(filename, (error, base64Data) => {
+      if (error) {
+        const webcamError = createWebcamError('Failed to capture webcam frame', error);
+        logger.error('Webcam capture failed:', error);
+        reject(webcamError);
+        return;
+      }
+      resolve(base64Data);
     });
-  }
-}
+  });
 
-export const webcamService = new WebcamService();
+const logCapture = tap(() => logger.debug('Capturing webcam frame...'));
+const logSuccess = tap(() => logger.debug('Webcam frame captured successfully'));
+
+const createWebcamService = () => {
+  const options = createWebcamOptions();
+  const webcam = createWebcam(options);
+  const capture = promisifyCapture(webcam);
+  
+  return {
+    captureFrame: async () => {
+      logCapture();
+      const result = await tryCatch(() => capture(APP_CONFIG.CAPTURE_FILENAME))();
+      return result.success ? logSuccess(result.data) : Promise.reject(result.error);
+    }
+  };
+};
+
+export const webcamService = createWebcamService();

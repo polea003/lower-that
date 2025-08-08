@@ -1,69 +1,79 @@
 import readline from 'readline';
 import { CONTENT_TYPES, USER_MENU_OPTIONS } from '../config/constants.js';
 import { logger } from '../utils/logger.js';
+import { curry, tap, maybe } from '../utils/functional.js';
 
-class UserPrompts {
-  constructor() {
-    this.rl = null;
-  }
+const createInterface = () => readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
-  _createInterface() {
-    if (!this.rl) {
-      this.rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-      });
-    }
-    return this.rl;
-  }
+const closeInterface = (rl) => {
+  rl.close();
+  return rl;
+};
 
-  _closeInterface() {
-    if (this.rl) {
-      this.rl.close();
-      this.rl = null;
-    }
-  }
-
-  async askQuestion(question) {
-    const rl = this._createInterface();
-    
-    return new Promise((resolve) => {
-      rl.question(question, (answer) => {
-        this._closeInterface();
-        resolve(answer.trim());
-      });
+const promisifyQuestion = (rl) => (question) => 
+  new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      closeInterface(rl);
+      resolve(answer.trim());
     });
-  }
+  });
 
-  async selectContentType() {
-    logger.info('Prompting user to select content type...');
-    
-    console.log('What are you watching?');
-    console.log(`  ${USER_MENU_OPTIONS.SPORTING_EVENT}) Sporting event`);
-    console.log(`  ${USER_MENU_OPTIONS.BLACK_WHITE_MOVIE}) Black & white movie`);
-    console.log(`  ${USER_MENU_OPTIONS.CUSTOM}) Custom`);
-    
-    const choice = await this.askQuestion('> ');
-    
-    switch (choice) {
-      case USER_MENU_OPTIONS.SPORTING_EVENT:
-        logger.info('User selected: Sporting event');
-        return CONTENT_TYPES.SPORTING_EVENT;
-        
-      case USER_MENU_OPTIONS.BLACK_WHITE_MOVIE:
-        logger.info('User selected: Black & white movie');
-        return CONTENT_TYPES.BLACK_WHITE_MOVIE;
-        
-      case USER_MENU_OPTIONS.CUSTOM:
-        const customDescription = await this.askQuestion('Enter your custom description: ');
-        logger.info('User provided custom description:', customDescription);
-        return customDescription || CONTENT_TYPES.SPORTING_EVENT;
-        
-      default:
-        logger.warn('Invalid selection, defaulting to sporting event');
-        return CONTENT_TYPES.SPORTING_EVENT;
-    }
-  }
-}
+const askQuestion = (question) => {
+  const rl = createInterface();
+  return promisifyQuestion(rl)(question);
+};
 
-export const userPrompts = new UserPrompts();
+const displayMenu = () => {
+  console.log('What are you watching?');
+  console.log(`  ${USER_MENU_OPTIONS.SPORTING_EVENT}) Sporting event`);
+  console.log(`  ${USER_MENU_OPTIONS.BLACK_WHITE_MOVIE}) Black & white movie`);
+  console.log(`  ${USER_MENU_OPTIONS.CUSTOM}) Custom`);
+};
+
+const logUserSelection = tap((selection) => logger.info('User selected:', selection));
+const logCustomDescription = tap((description) => logger.info('User provided custom description:', description));
+const logInvalidSelection = tap(() => logger.warn('Invalid selection, defaulting to sporting event'));
+const logPromptStart = tap(() => logger.info('Prompting user to select content type...'));
+
+const mapChoiceToContent = (choice) => {
+  switch (choice) {
+    case USER_MENU_OPTIONS.SPORTING_EVENT:
+      return logUserSelection('Sporting event') || CONTENT_TYPES.SPORTING_EVENT;
+      
+    case USER_MENU_OPTIONS.BLACK_WHITE_MOVIE:
+      return logUserSelection('Black & white movie') || CONTENT_TYPES.BLACK_WHITE_MOVIE;
+      
+    case USER_MENU_OPTIONS.CUSTOM:
+      return 'CUSTOM_PROMPT_NEEDED';
+      
+    default:
+      return logInvalidSelection() || CONTENT_TYPES.SPORTING_EVENT;
+  }
+};
+
+const handleCustomContent = async () => {
+  const customDescription = await askQuestion('Enter your custom description: ');
+  return maybe(logCustomDescription)(customDescription) || CONTENT_TYPES.SPORTING_EVENT;
+};
+
+const selectContentType = async () => {
+  logPromptStart();
+  displayMenu();
+  
+  const choice = await askQuestion('> ');
+  const contentType = mapChoiceToContent(choice);
+  
+  return contentType === 'CUSTOM_PROMPT_NEEDED' 
+    ? await handleCustomContent()
+    : contentType;
+};
+
+const createUserPrompts = () => ({
+  askQuestion,
+  selectContentType
+});
+
+export const userPrompts = createUserPrompts();
