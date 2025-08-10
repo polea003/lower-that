@@ -5,8 +5,8 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --coverage",
+    "test:watch": "vitest --coverage"
   },
   "keywords": [],
   "author": "patrick o'leary",
@@ -19,6 +19,7 @@
     "samsung-tv-remote": "^2.2.2"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.9",
     "vitest": "^2.1.9"
   }
 }
