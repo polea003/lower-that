@@ -2,7 +2,6 @@ import OpenAI from 'openai';
 import { AI_CONFIG } from '../config/constants.js';
 import { environment } from '../config/environment.js';
 import { logger } from '../utils/logger.js';
-import { curry, tryCatch, tap, pipe } from '../utils/functional.js';
 
 const createVisionAnalysisError = (message, cause) => {
   const error = new Error(message);
@@ -40,7 +39,7 @@ const createAnalysisSchema = () => ({
   additionalProperties: false
 });
 
-const createOpenAIRequest = curry((systemPrompt, imageBase64) => ({
+const createOpenAIRequest = (systemPrompt, imageDataUrl) => ({
   model: AI_CONFIG.MODEL,
   instructions: systemPrompt,
   reasoning: { effort: AI_CONFIG.REASONING_EFFORT },
@@ -50,7 +49,7 @@ const createOpenAIRequest = curry((systemPrompt, imageBase64) => ({
       content: [
         {
           type: 'input_image',
-          image_url: imageBase64,
+          image_url: imageDataUrl,
           detail: AI_CONFIG.IMAGE_DETAIL_LEVEL,
         },
       ],
@@ -65,15 +64,12 @@ const createOpenAIRequest = curry((systemPrompt, imageBase64) => ({
       strict: true
     }
   }
-}));
+});
 
 const callOpenAI = (client) => async (request) => {
   const response = await client.responses.create(request);
   return JSON.parse(response.output_text);
 };
-
-const logAnalysisStart = tap(() => logger.debug('Analyzing video content with OpenAI Vision API...'));
-const logAnalysisComplete = tap(() => logger.debug('Vision analysis completed successfully'));
 
 const createVisionAnalysisService = () => {
   const client = new OpenAI({ apiKey: environment.openai.apiKey });
@@ -83,25 +79,21 @@ const createVisionAnalysisService = () => {
   
   return {
     analyzeVideoContent: async (imageBase64, contentDescription) => {
-      const systemPrompt = createSystemPrompt(contentDescription);
-      const request = createOpenAIRequest(systemPrompt)(imageBase64);
-      
-      const analyzeContent = pipe(
-        logAnalysisStart,
-        () => request,
-        analyzeWithClient,
-        logAnalysisComplete
-      );
-      
-      const result = await tryCatch(analyzeContent)();
-      
-      if (!result.success) {
-        const analysisError = createVisionAnalysisError('Failed to analyze video content', result.error);
-        logger.error('Vision analysis failed:', result.error);
+      try {
+        logger.debug('Analyzing video content with OpenAI Vision API...');
+        const systemPrompt = createSystemPrompt(contentDescription);
+        const imageDataUrl = imageBase64.startsWith('data:')
+          ? imageBase64
+          : `data:image/jpeg;base64,${imageBase64}`;
+        const request = createOpenAIRequest(systemPrompt, imageDataUrl);
+        const data = await analyzeWithClient(request);
+        logger.debug('Vision analysis completed successfully');
+        return data;
+      } catch (error) {
+        const analysisError = createVisionAnalysisError('Failed to analyze video content', error);
+        logger.error('Vision analysis failed:', error);
         throw analysisError;
       }
-      
-      return result.data;
     }
   };
 };

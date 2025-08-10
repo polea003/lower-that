@@ -1,7 +1,6 @@
 import readline from 'readline';
 import { CONTENT_TYPES, USER_MENU_OPTIONS } from '../config/constants.js';
 import { logger } from '../utils/logger.js';
-import { curry, tap, maybe } from '../utils/functional.js';
 
 const createInterface = () => readline.createInterface({
   input: process.stdin,
@@ -33,30 +32,39 @@ const displayMenu = () => {
   console.log(`  ${USER_MENU_OPTIONS.CUSTOM}) Custom`);
 };
 
-const logUserSelection = tap((selection) => logger.info('User selected:', selection));
-const logCustomDescription = tap((description) => logger.info('User provided custom description:', description));
-const logInvalidSelection = tap(() => logger.warn('Invalid selection, defaulting to sporting event'));
-const logPromptStart = tap(() => logger.info('Prompting user to select content type...'));
+const logUserSelection = (selection) => logger.info('User selected:', selection);
+const logCustomDescription = (description) => logger.info('User provided custom description:', description);
+const logInvalidSelection = () => logger.warn('Invalid selection, defaulting to sporting event');
+const logPromptStart = () => logger.info('Prompting user to select content type...');
 
 const mapChoiceToContent = (choice) => {
   switch (choice) {
     case USER_MENU_OPTIONS.SPORTING_EVENT:
-      return logUserSelection('Sporting event') || CONTENT_TYPES.SPORTING_EVENT;
+      logUserSelection('Sporting event');
+      return CONTENT_TYPES.SPORTING_EVENT;
       
     case USER_MENU_OPTIONS.BLACK_WHITE_MOVIE:
-      return logUserSelection('Black & white movie') || CONTENT_TYPES.BLACK_WHITE_MOVIE;
+      logUserSelection('Black & white movie');
+      return CONTENT_TYPES.BLACK_WHITE_MOVIE;
       
     case USER_MENU_OPTIONS.CUSTOM:
       return 'CUSTOM_PROMPT_NEEDED';
       
     default:
-      return logInvalidSelection() || CONTENT_TYPES.SPORTING_EVENT;
+      logInvalidSelection();
+      return CONTENT_TYPES.SPORTING_EVENT;
   }
 };
 
 const handleCustomContent = async () => {
   const customDescription = await askQuestion('Enter your custom description: ');
-  return maybe(logCustomDescription)(customDescription) || CONTENT_TYPES.SPORTING_EVENT;
+  const value = (customDescription || '').trim();
+  if (value) {
+    logCustomDescription(value);
+    return value;
+  }
+  logInvalidSelection();
+  return CONTENT_TYPES.SPORTING_EVENT;
 };
 
 const selectContentType = async () => {

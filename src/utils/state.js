@@ -1,7 +1,6 @@
-import { pipe, tap } from './functional.js';
 import { logger } from './logger.js';
 
-// Immutable state management using functional approach
+// Immutable state with simple helpers
 
 export const createAppState = (initialState = {}) => ({
   isMuted: false,
@@ -10,42 +9,23 @@ export const createAppState = (initialState = {}) => ({
   ...initialState
 });
 
-export const updateState = (updates) => (state) => ({
-  ...state,
-  ...updates
-});
+const logStateChange = (state) => {
+  logger.debug('State updated:', state);
+  return state;
+};
 
-export const getStateProperty = (property) => (state) => state[property];
+export const setMuted = (state, isMuted) => logStateChange({ ...state, isMuted });
+export const setContentDescription = (state, contentDescription) =>
+  logStateChange({ ...state, contentDescription });
+export const setRunning = (state, isRunning) => logStateChange({ ...state, isRunning });
 
-export const logStateChange = tap((state) => 
-  logger.debug('State updated:', state)
-);
+export const isMuted = (state) => state.isMuted;
+export const isRunning = (state) => state.isRunning;
+export const getContentDescription = (state) => state.contentDescription;
 
-// State transition functions
-export const setMuted = (isMuted) => updateState({ isMuted });
-export const setContentDescription = (contentDescription) => updateState({ contentDescription });
-export const setRunning = (isRunning) => updateState({ isRunning });
-
-// State predicates
-export const isMuted = getStateProperty('isMuted');
-export const isRunning = getStateProperty('isRunning');
-export const getContentDescription = getStateProperty('contentDescription');
-
-// Compound state operations
-export const toggleMuteState = (state) => 
-  pipe(
-    setMuted(!isMuted(state)),
-    logStateChange
-  )(state);
+export const toggleMuteState = (state) => setMuted(state, !state.isMuted);
 
 export const initializeState = (contentDescription) =>
-  pipe(
-    setContentDescription(contentDescription),
-    setRunning(true),
-    logStateChange
-  )(createAppState());
+  logStateChange(createAppState({ contentDescription, isRunning: true }));
 
-export const stopApp = pipe(
-  setRunning(false),
-  logStateChange
-);
+export const stopApp = (state) => setRunning(state, false);

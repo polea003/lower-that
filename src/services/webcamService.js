@@ -1,7 +1,6 @@
 import NodeWebcam from 'node-webcam';
 import { WEBCAM_CONFIG, APP_CONFIG } from '../config/constants.js';
 import { logger } from '../utils/logger.js';
-import { tryCatch, tap } from '../utils/functional.js';
 
 const createWebcamError = (message, cause) => {
   const error = new Error(message);
@@ -23,32 +22,33 @@ const createWebcam = (options) => {
   return NodeWebcam.create(options);
 };
 
-const promisifyCapture = (webcam) => (filename) => 
+const promisifyCapture = (webcam) => (filename) =>
   new Promise((resolve, reject) => {
     webcam.capture(filename, (error, base64Data) => {
       if (error) {
-        const webcamError = createWebcamError('Failed to capture webcam frame', error);
-        logger.error('Webcam capture failed:', error);
-        reject(webcamError);
+        reject(createWebcamError('Failed to capture webcam frame', error));
         return;
       }
       resolve(base64Data);
     });
   });
 
-const logCapture = tap(() => logger.debug('Capturing webcam frame...'));
-const logSuccess = tap(() => logger.debug('Webcam frame captured successfully'));
-
 const createWebcamService = () => {
   const options = createWebcamOptions();
   const webcam = createWebcam(options);
   const capture = promisifyCapture(webcam);
-  
+
   return {
     captureFrame: async () => {
-      logCapture();
-      const result = await tryCatch(() => capture(APP_CONFIG.CAPTURE_FILENAME))();
-      return result.success ? logSuccess(result.data) : Promise.reject(result.error);
+      try {
+        logger.debug('Capturing webcam frame...');
+        const base64 = await capture(APP_CONFIG.CAPTURE_FILENAME);
+        logger.debug('Webcam frame captured successfully');
+        return base64;
+      } catch (error) {
+        logger.error('Webcam capture failed:', error);
+        throw error;
+      }
     }
   };
 };

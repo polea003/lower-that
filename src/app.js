@@ -5,7 +5,7 @@ import { userPrompts } from './ui/userPrompts.js';
 import { webcamService } from './services/webcamService.js';
 import { visionAnalysisService } from './services/visionAnalysisService.js';
 import { tvRemoteService } from './services/tvRemoteService.js';
-import { curry, tap, tryCatch, delay, asyncPipe } from './utils/functional.js';
+import { sleep } from './utils/functional.js';
 import {
   createAppState,
   initializeState,
@@ -23,60 +23,43 @@ const createApplicationError = (message, cause) => {
   return error;
 };
 
-// Pure functions for application logic
+// Helpers
 const validateEnvironment = () => {
   logger.info('Validating environment...');
   environment.validate();
-  return true;
 };
-
-const logAppStart = tap(() => logger.info('Starting Lower That application...'));
-const logAppInitialized = tap(() => logger.info('Application initialized successfully'));
-const logLoopStart = tap(() => logger.info('Starting main monitoring loop...'));
-const logFrameAnalysis = tap((analysis) => logger.info('Frame analysis:', analysis));
-const logMuteAction = tap((action) => logger.info(`${action} TV based on content detection`));
-const logFrameError = tap((error) => logger.error('Frame processing failed:', error.message));
-const logWaitTime = tap(() => logger.debug(`Waiting ${APP_CONFIG.CAPTURE_INTERVAL_MS}ms before next capture...`));
 
 // Initialize application state
 const initializeApp = async () => {
-  const initialize = asyncPipe(
-    logAppStart,
-    validateEnvironment,
-    () => userPrompts.selectContentType(),
-    initializeState,
-    logAppInitialized
-  );
-  
-  const result = await tryCatch(initialize)();
-  
-  if (!result.success) {
-    throw createApplicationError('Failed to initialize application', result.error);
+  try {
+    logger.info('Starting Lower That application...');
+    validateEnvironment();
+    const choice = await userPrompts.selectContentType();
+    const state = initializeState(choice);
+    logger.info('Application initialized successfully');
+    return state;
+  } catch (error) {
+    throw createApplicationError('Failed to initialize application', error);
   }
-  
-  return result.data;
 };
 
 // Frame processing pipeline
-const processFrame = curry(async (state) => {
+const processFrame = async (state) => {
   const contentDescription = getContentDescription(state);
-  
-  const frameProcessor = asyncPipe(
-    () => webcamService.captureFrame(),
-    (imageBase64) => visionAnalysisService.analyzeVideoContent(imageBase64, contentDescription),
-    logFrameAnalysis,
-    (analysis) => handleMuteLogic(state, analysis)
-  );
-  
-  const result = await tryCatch(frameProcessor)();
-  
-  if (!result.success) {
-    logFrameError(result.error);
+  try {
+    const imageBase64 = await webcamService.captureFrame();
+    const analysis = await visionAnalysisService.analyzeVideoContent(
+      imageBase64,
+      contentDescription
+    );
+    logger.info('Frame analysis:', analysis);
+    const nextState = await handleMuteLogic(state, analysis);
+    return nextState;
+  } catch (error) {
+    logger.error('Frame processing failed:', error.message || error);
     return state;
   }
-  
-  return result.data;
-});
+};
 
 // Mute logic as pure function
 const handleMuteLogic = async (state, analysis) => {
@@ -85,12 +68,12 @@ const handleMuteLogic = async (state, analysis) => {
   
   if (!currentlyMuted && shouldMute) {
     await tvRemoteService.toggleMute();
-    logMuteAction('Muting');
-    return setMuted(true)(state);
+    logger.info('Muting TV based on content detection');
+    return setMuted(state, true);
   } else if (currentlyMuted && !shouldMute) {
     await tvRemoteService.toggleMute();
-    logMuteAction('Unmuting');
-    return setMuted(false)(state);
+    logger.info('Unmuting TV based on content detection');
+    return setMuted(state, false);
   }
   
   return state;
@@ -98,13 +81,13 @@ const handleMuteLogic = async (state, analysis) => {
 
 // Main application loop
 const runMainLoop = async (initialState) => {
-  logLoopStart();
+  logger.info('Starting main monitoring loop...');
   let currentState = initialState;
   
   while (isRunning(currentState)) {
     currentState = await processFrame(currentState);
-    logWaitTime();
-    await delay(APP_CONFIG.CAPTURE_INTERVAL_MS)();
+    logger.debug(`Waiting ${APP_CONFIG.CAPTURE_INTERVAL_MS}ms before next capture...`);
+    await sleep(APP_CONFIG.CAPTURE_INTERVAL_MS);
   }
   
   return currentState;
@@ -136,11 +119,11 @@ const main = async () => {
     app.stop();
     process.exit(0);
   });
-  
-  const result = await tryCatch(app.start)();
-  
-  if (!result.success) {
-    logger.error('Application failed:', result.error);
+
+  try {
+    await app.start();
+  } catch (error) {
+    logger.error('Application failed:', error);
     process.exit(1);
   }
 };

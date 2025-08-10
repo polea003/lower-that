@@ -1,6 +1,10 @@
-// Core functional programming utilities
+// Minimal helpers kept intentionally simple. Prefer plain async/await in modules.
 
+// Simple pipe kept for occasional synchronous composition.
 export const pipe = (...fns) => (value) => fns.reduce((acc, fn) => fn(acc), value);
+
+// Sleep helper for delays
+export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const compose = (...fns) => (value) => fns.reduceRight((acc, fn) => fn(acc), value);
 
