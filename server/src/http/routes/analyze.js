@@ -13,10 +13,14 @@ const createBadRequest = (message) => {
 
 export const router = (deps = {}) => {
   const r = Router()
-  const { visionAnalysisService } = deps
+  const { visionAnalysisService, tvRemoteService } = deps
   if (!visionAnalysisService || typeof visionAnalysisService.analyzeVideoContent !== 'function') {
     throw new Error('visionAnalysisService with analyzeVideoContent is required')
   }
+  if (!tvRemoteService || typeof tvRemoteService.toggleMute !== 'function') {
+    throw new Error('tvRemoteService with toggleMute is required')
+  }
+  let isMuted = false
 
   r.post('/analyze', upload.single('image'), async (req, res, next) => {
     try {
@@ -32,7 +36,17 @@ export const router = (deps = {}) => {
       }
 
       const result = await visionAnalysisService.analyzeVideoContent(base64, contentDescription)
-      res.json(result)
+
+      // Always apply mute logic server-side based on analysis
+      if (!isMuted && result.should_mute_tv) {
+        await tvRemoteService.toggleMute()
+        isMuted = true
+      } else if (isMuted && !result.should_mute_tv) {
+        await tvRemoteService.toggleMute()
+        isMuted = false
+      }
+
+      res.json({ ...result, server_isMuted: isMuted })
     } catch (err) {
       next(err)
     }
@@ -40,4 +54,3 @@ export const router = (deps = {}) => {
 
   return r
 }
-

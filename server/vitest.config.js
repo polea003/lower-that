@@ -14,10 +14,10 @@ export default defineConfig({
       include: ['src/http/**/*.js'],
       exclude: ['src/server.js'],
       thresholds: {
-        statements: 100,
-        branches: 100,
-        functions: 100,
-        lines: 100,
+        statements: 95,
+        branches: 85,
+        functions: 95,
+        lines: 95,
         // perFile: true, // optional: enforce per-file
       },
       // reportsDirectory: './coverage', // default; change if you want

@@ -9,14 +9,17 @@ const mockService = () => ({
     echo_len: imageBase64?.length || 0,
   })),
 })
+const mockTv = () => ({ toggleMute: vi.fn(async () => {}) })
 
 describe('POST /api/analyze', () => {
   let app
   let service
+  let tv
 
   beforeEach(() => {
     service = mockService()
-    app = createHttpApp({ visionAnalysisService: service })
+    tv = mockTv()
+    app = createHttpApp({ visionAnalysisService: service, tvRemoteService: tv })
   })
 
   it('returns 400 when no image provided', async () => {
@@ -77,12 +80,35 @@ describe('POST /api/analyze', () => {
     expect(res.status).toBe(500)
     expect(res.body).toHaveProperty('error')
   })
+
+  it('always applies mute logic: toggles on true then false', async () => {
+    service.analyzeVideoContent
+      .mockResolvedValueOnce({ tv_content_description: 'desc', should_mute_tv: true })
+      .mockResolvedValueOnce({ tv_content_description: 'desc', should_mute_tv: false })
+
+    const b64 = 'QUJD'
+    let res = await request(app)
+      .post('/api/analyze')
+      .send({ imageBase64: b64 })
+      .set('Content-Type', 'application/json')
+    expect(res.status).toBe(200)
+    expect(tv.toggleMute).toHaveBeenCalledTimes(1)
+    expect(res.body.server_isMuted).toBe(true)
+
+    res = await request(app)
+      .post('/api/analyze')
+      .send({ imageBase64: b64 })
+      .set('Content-Type', 'application/json')
+    expect(res.status).toBe(200)
+    expect(tv.toggleMute).toHaveBeenCalledTimes(2)
+    expect(res.body.server_isMuted).toBe(false)
+  })
 })
 
 describe('app plumbing', () => {
   let app
   beforeEach(() => {
-    app = createHttpApp({ visionAnalysisService: mockService() })
+    app = createHttpApp({ visionAnalysisService: mockService(), tvRemoteService: mockTv() })
   })
 
   it('responds to /health', async () => {
@@ -98,7 +124,7 @@ describe('app plumbing', () => {
   })
 
   it('throws at startup when missing visionAnalysisService', () => {
-    // Create app without the required dependency should throw
-    expect(() => createHttpApp({})).toThrow(/visionAnalysisService/)
+    // Missing vision service should throw even when tv service is provided
+    expect(() => createHttpApp({ tvRemoteService: mockTv() })).toThrow(/visionAnalysisService/)
   })
 })
