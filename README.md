@@ -1,72 +1,107 @@
 # 📺 Lower That
 
-Automatically mute commercials during sporting events using your webcam and a multi-modal LLM (e.g., `gpt-5-nano`).
-**\~\$0.10/hour cost with `gpt-5-nano`.**
+Mute/unmute your Samsung TV based on what your webcam sees. The web app captures an image every 5 seconds, the server analyzes it with an OpenAI vision model, and the server decides whether to toggle mute.
 
-## 🚀 Features
+## Overview
 
-* Captures webcam image every 5 seconds
-* Analyzes frames using **OpenAI's `gpt-5-nano`**
-* Controls **Samsung TVs** (IP + MAC required)
-* Optimized for **sporting event broadcasts**
-* **MIT licensed** and fully open source
+- Web client (Vite + React + Tailwind + MUI) shows the webcam, lets you set a preferred content description, and streams snapshots to the server.
+- Server (Express) exposes `POST /api/analyze`; it calls the OpenAI API and controls your TV.
+- Testing is set up end-to-end: Vitest + RTL + MSW on the web, and Vitest + Supertest on the server.
 
-## ⚙️ Setup
+## Architecture
 
-This repo now uses a server/web layout. The existing Node.js app lives under `server/` and a separate web client can be added later (e.g., `web/`).
+- `server/`: Express API
+  - `src/server.js`: entry point
+  - `src/http/app.js`: Express app wiring
+  - `src/http/routes/analyze.js`: `POST /api/analyze` (multipart or JSON base64)
+  - `src/services/visionAnalysisService.js`: OpenAI integration
+  - `src/services/tvRemoteService.js`: Samsung TV control
+  - `src/services/tvRemoteNoopService.js`: no-op TV control (for dry runs)
+  - `src/config/environment.js`: env parsing/validation
+  - `src/utils/logger.js`: structured logging
+- `web/`: Vite React app
+  - `src/App.tsx`: single-page UI (webcam, input, last image, results log)
+  - `src/api/client.ts`: client for `/api/analyze`
+  - `vite.config.ts`: dev proxy `/api` → `http://localhost:3000`
 
-### Directory Structure
+## Setup
 
-- `server/`: Node.js server (current app)
-- `README.md`: Top-level docs (this file)
-- `LICENSE`, `.gitignore`: Repo metadata
-
-### 1. Configure Environment Variables (in `server/`)
-
-Copy the example file and fill in the required values:
+### 1) Server configuration
 
 ```bash
 cd server
 cp env.example .env
 ```
 
-Edit `.env` and provide your credentials:
+Edit `.env` with your values:
 
 ```env
 OPENAI_API_KEY=your_openai_api_key
 SAMSUNG_TV_IP_ADDRESS=your_tv_ip
 SAMSUNG_TV_MAC_ADDRESS=your_tv_mac
+
+# Optional: disable real TV control (dry run)
+TV_CONTROL_ENABLED=true
+
+# Optional: logging level (info, debug, warn, error)
+LOG_LEVEL=info
 ```
 
-📘 Refer to the [`samsung-tv-remote` docs](https://www.npmjs.com/package/samsung-tv-remote) to find your Samsung TV's IP and MAC address.
+Notes:
+- Samsung IP/MAC are required when `TV_CONTROL_ENABLED=true`.
+- With `TV_CONTROL_ENABLED=false`, the server analyzes but does not send TV commands.
 
-> **First-time setup:** Your TV may prompt you to allow access — confirm to enable control.
-
-### 2. Install Dependencies (in `server/`)
-
-Ensure your system meets [node-webcam](https://www.npmjs.com/package/node-webcam) requirements, then install:
+Install dependencies:
 
 ```bash
 cd server
 npm install
 ```
 
-## ▶️ Usage
-
-Point your webcam at the TV and run:
+Run the API:
 
 ```bash
-cd server
 npm start
+# http://localhost:3000
 ```
 
-> 🔇 The program will automatically mute commercials during games.
-> 💸 **Reminder:** Using `gpt-5-nano` costs \~\$0.10/hour.
-> 🛑 Stop the program with `Ctrl+C`.
+### 2) Web client
 
-Notes:
-- The capture artifact (`most_recent_capture.jpg`) is written in the `server/` folder during runs.
+Install deps and run dev server:
 
-## 🤝 Contributing
+```bash
+cd web
+npm install
+npm run dev
+# http://localhost:5173 (proxies /api to :3000)
+```
 
-PRs welcome! Bug fixes, improvements, and feature ideas are encouraged.
+The page:
+- Shows live webcam
+- Lets you set your preferred content description
+- Captures a JPEG every 5s and posts to `/api/analyze`
+- Displays the last capture and a rolling results log
+
+## Testing
+
+- Server: `cd server && npm test` (Vitest + Supertest; coverage enabled)
+- Web (unit): `cd web && npm test` (Vitest + RTL + MSW; coverage enabled)
+- Web (e2e): `cd web && npx playwright install && npm run e2e`
+
+## Deployment
+
+- Server: run `node server/src/server.js` behind a process manager (PM2/systemd/Docker). Expose port 3000 (or set `PORT`).
+- Web: build with `cd web && npm run build` and serve the static `dist/` via your web server/CDN. Configure your reverse proxy to route `/api` to the server.
+
+## Notes
+
+- OpenAI calls incur cost; monitor usage.
+- Webcam captures include your environment; handle artifacts and logs securely.
+- The server applies mute logic on every analysis request — the client does not need to manage TV state.
+
+## Contributing
+
+PRs welcome! Please include:
+- Rationale and scope of changes
+- Testing steps and logs (use `LOG_LEVEL=debug` where helpful)
+- Any env var changes (update `server/env.example`)
