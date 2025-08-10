@@ -1,4 +1,6 @@
 import { analyzeImage } from './client'
+import { server } from '../test/testServer'
+import { http, HttpResponse } from 'msw'
 
 describe('api/client analyzeImage', () => {
   it('posts to /api/analyze and returns parsed result', async () => {
@@ -9,5 +11,22 @@ describe('api/client analyzeImage', () => {
       should_mute_tv: expect.any(Boolean),
     })
   })
-})
 
+  it('supports string input by wrapping into Blob', async () => {
+    // Using default MSW handler; this exercises the string/Blob branch
+    const data = await analyzeImage('STRING-CONTENT')
+    expect(data).toEqual({
+      tv_content_description: expect.any(String),
+      should_mute_tv: expect.any(Boolean),
+    })
+  })
+
+  it('throws on non-OK response', async () => {
+    server.use(
+      http.post('/api/analyze', async () => new HttpResponse(null, { status: 500 }))
+    )
+    await expect(analyzeImage(new Blob(["bad"], { type: 'image/jpeg' }))).rejects.toThrow(
+      /Analyze failed: 500/
+    )
+  })
+})
