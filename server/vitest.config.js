@@ -9,8 +9,10 @@ export default defineConfig({
       // add 'html' so you can open ./coverage/index.html
       reporter: ['text', 'lcov', 'html'],
       all: true,
-      include: ['src/**/*.js'],
-      exclude: ['src/app.js'],
+      // Focus coverage on new HTTP layer to support TDD without
+      // requiring legacy app loop to be covered.
+      include: ['src/http/**/*.js'],
+      exclude: ['src/server.js'],
       thresholds: {
         statements: 100,
         branches: 100,

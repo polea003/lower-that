@@ -3,10 +3,13 @@ export type AnalyzeResponse = {
   should_mute_tv: boolean
 }
 
-export async function analyzeImage(image: Blob | string): Promise<AnalyzeResponse> {
+export async function analyzeImage(image: Blob | string, opts?: { contentDescription?: string }): Promise<AnalyzeResponse> {
   const isBlob = typeof image !== 'string'
   const body = new FormData()
   body.append('image', isBlob ? image : new Blob([image], { type: 'text/plain' }), 'image.jpg')
+  if (opts?.contentDescription) {
+    body.append('contentDescription', opts.contentDescription)
+  }
 
   const res = await fetch('/api/analyze', {
     method: 'POST',
@@ -15,4 +18,3 @@ export async function analyzeImage(image: Blob | string): Promise<AnalyzeRespons
   if (!res.ok) throw new Error(`Analyze failed: ${res.status}`)
   return res.json() as Promise<AnalyzeResponse>
 }
-
