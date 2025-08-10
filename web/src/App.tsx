@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { Button } from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <h1>Vite + React + Tailwind</h1>
+      <h1>Vite + React + Tailwind + MaterialUI/Icons</h1>
+      <Button variant="contained" startIcon={<HomeIcon />}>
+        Home
+      </Button>
     </>
   )
 }
