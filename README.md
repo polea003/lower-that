@@ -13,11 +13,20 @@ Automatically mute commercials during sporting events using your webcam and a mu
 
 ## ⚙️ Setup
 
-### 1. Configure Environment Variables
+This repo now uses a server/web layout. The existing Node.js app lives under `server/` and a separate web client can be added later (e.g., `web/`).
+
+### Directory Structure
+
+- `server/`: Node.js server (current app)
+- `README.md`: Top-level docs (this file)
+- `LICENSE`, `.gitignore`: Repo metadata
+
+### 1. Configure Environment Variables (in `server/`)
 
 Copy the example file and fill in the required values:
 
 ```bash
+cd server
 cp env.example .env
 ```
 
@@ -33,11 +42,12 @@ SAMSUNG_TV_MAC_ADDRESS=your_tv_mac
 
 > **First-time setup:** Your TV may prompt you to allow access — confirm to enable control.
 
-### 2. Install Dependencies
+### 2. Install Dependencies (in `server/`)
 
 Ensure your system meets [node-webcam](https://www.npmjs.com/package/node-webcam) requirements, then install:
 
 ```bash
+cd server
 npm install
 ```
 
@@ -46,12 +56,16 @@ npm install
 Point your webcam at the TV and run:
 
 ```bash
+cd server
 npm start
 ```
 
 > 🔇 The program will automatically mute commercials during games.
 > 💸 **Reminder:** Using `gpt-5-nano` costs \~\$0.10/hour.
 > 🛑 Stop the program with `Ctrl+C`.
+
+Notes:
+- The capture artifact (`most_recent_capture.jpg`) is written in the `server/` folder during runs.
 
 ## 🤝 Contributing
 
