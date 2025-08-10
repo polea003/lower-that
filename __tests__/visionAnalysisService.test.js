@@ -34,8 +34,10 @@ describe('services/visionAnalysisService', () => {
   });
 
   it('throws a typed error on API failure', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     mocks.create.mockRejectedValue(new Error('api down'));
     const { visionAnalysisService } = await import('../src/services/visionAnalysisService.js');
     await expect(visionAnalysisService.analyzeVideoContent('BASE64', 'sports')).rejects.toHaveProperty('name', 'VisionAnalysisError');
+    logSpy.mockRestore();
   });
 });

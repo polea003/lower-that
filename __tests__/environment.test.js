@@ -23,6 +23,7 @@ describe('config/environment', () => {
   });
 
   it('throws when a required env var is missing', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     // Prevent dotenv from loading local .env, so our deletions stick
     vi.mock('dotenv', () => ({ default: { config: vi.fn() } }));
     delete process.env.OPENAI_API_KEY;
@@ -30,5 +31,6 @@ describe('config/environment', () => {
     process.env.SAMSUNG_TV_MAC_ADDRESS = 'aa:bb:cc:dd:ee:ff';
     const { environment } = await import('../src/config/environment.js');
     expect(() => environment.validate()).toThrow(/OPENAI_API_KEY/);
+    logSpy.mockRestore();
   });
 });

@@ -34,9 +34,11 @@ describe('services/tvRemoteService', () => {
   });
 
   it('propagates errors with typed name on toggleMute', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     remote.sendKey.mockRejectedValue(new Error('boom'));
     const { tvRemoteService } = await import('../src/services/tvRemoteService.js');
     await expect(tvRemoteService.toggleMute()).rejects.toHaveProperty('name', 'TvRemoteError');
+    logSpy.mockRestore();
   });
 
   it('wakes TV successfully', async () => {
@@ -47,8 +49,10 @@ describe('services/tvRemoteService', () => {
   });
 
   it('propagates errors with typed name on wakeUp', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     remote.wakeTV.mockRejectedValue(new Error('down'));
     const { tvRemoteService } = await import('../src/services/tvRemoteService.js');
     await expect(tvRemoteService.wakeUp()).rejects.toHaveProperty('name', 'TvRemoteError');
+    logSpy.mockRestore();
   });
 });

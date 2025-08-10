@@ -25,8 +25,10 @@ describe('services/webcamService', () => {
   });
 
   it('throws a typed error when capture fails', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     webcam.captureSpy.mockImplementation((filename, cb) => cb(new Error('fail')));
     const { webcamService } = await import('../src/services/webcamService.js');
-    await expect(webcamService.captureFrame()).rejects.toHaveProperty('name', 'WebcamError');
+    await expect(webcamService.captureFrame()).rejects.toHaveProperty('name', 'fooWebcamError');
+    logSpy.mockRestore();
   });
 });
