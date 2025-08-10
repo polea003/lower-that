@@ -1,5 +1,5 @@
-import { analyzeImage } from './client'
-import { server } from '../test/testServer'
+import { analyzeImage } from '../../src/api/client'
+import { server } from '../msw/testServer'
 import { http, HttpResponse } from 'msw'
 
 describe('api/client analyzeImage', () => {
@@ -30,3 +30,4 @@ describe('api/client analyzeImage', () => {
     )
   })
 })
+

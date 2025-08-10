@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import App from './App'
+import App from '../src/App'
 
 describe('App', () => {
   beforeAll(() => {
@@ -23,3 +23,4 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /stop/i })).toBeInTheDocument()
   })
 })
+

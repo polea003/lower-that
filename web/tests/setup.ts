@@ -2,7 +2,7 @@
 import '@testing-library/jest-dom/vitest'
 
 // MSW test server setup (node environment)
-import { server } from './testServer'
+import { server } from './msw/testServer'
 
 // Establish API mocking before all tests.
 beforeAll(() => server.listen())
@@ -12,3 +12,4 @@ afterEach(() => server.resetHandlers())
 
 // Clean up after the tests are finished.
 afterAll(() => server.close())
+
