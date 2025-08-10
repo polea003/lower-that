@@ -4,6 +4,7 @@ import {
   initializeState,
   setMuted,
   setRunning,
+  setContentDescription,
   stopApp,
   toggleMuteState,
   isMuted,
@@ -42,5 +43,12 @@ describe('utils/state', () => {
     const stopped = stopApp(running);
     expect(isRunning(stopped)).toBe(false);
   });
-});
 
+  it('setContentDescription updates description immutably', () => {
+    const base = createAppState();
+    const next = setContentDescription(base, 'sports');
+    expect(next).not.toBe(base);
+    expect(getContentDescription(next)).toBe('sports');
+    expect(getContentDescription(base)).toBeNull();
+  });
+});

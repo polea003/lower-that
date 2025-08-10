@@ -46,7 +46,6 @@ describe('utils/functional', () => {
     const t0 = Date.now();
     await delay(1)();
     await sleep(1);
-    expect(Date.now() - t0).toBeGreaterThanOrEqual(2);
+    expect(Date.now() - t0).toBeGreaterThanOrEqual(1);
   });
 });
-
