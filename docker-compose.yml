@@ -1,0 +1,32 @@
+services:
+  server:
+    build:
+      context: ./server
+    environment:
+      - NODE_ENV=production
+      - PORT=5174
+      - LOG_LEVEL=info
+      # Uncomment and set for real integrations
+      # - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # - SAMSUNG_TV_IP_ADDRESS=${SAMSUNG_TV_IP_ADDRESS}
+      # - SAMSUNG_TV_MAC_ADDRESS=${SAMSUNG_TV_MAC_ADDRESS}
+    ports:
+      - "5174:5174"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      args:
+        VITE_API_BASE: http://server:5174
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+networks:
+  default:
+    name: lower-that
