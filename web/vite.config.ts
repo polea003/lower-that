@@ -9,8 +9,9 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
+    host: true,
     proxy: {
-      '/api': 'http://localhost:3000',
+      '/api': process.env.VITE_API_PROXY_TARGET || 'http://localhost:3000',
     },
   },
 })

@@ -22,7 +22,7 @@ Mute/unmute your Samsung TV based on what your webcam sees. The web app captures
 - `web/`: Vite React app
   - `src/App.tsx`: single-page UI (webcam, input, last image, results log)
   - `src/api/client.ts`: client for `/api/analyze`
-  - `vite.config.ts`: dev proxy `/api` → `http://localhost:3000`
+  - `vite.config.ts`: dev proxy `/api` → target from `VITE_API_PROXY_TARGET` (defaults to `http://localhost:3000`)
 
 ## Setup
 
@@ -92,6 +92,35 @@ The page:
 
 - Server: run `node server/src/server.js` behind a process manager (PM2/systemd/Docker). Expose port 3000 (or set `PORT`).
 - Web: build with `cd web && npm run build` and serve the static `dist/` via your web server/CDN. Configure your reverse proxy to route `/api` to the server.
+
+## Docker
+
+Two containers are provided via Docker Compose: one for the Express server and one for the Vite dev server.
+
+Quick start:
+
+```bash
+# from repo root
+cp server/env.example server/.env # optional reference
+
+# Provide env for the server (at minimum OPENAI_API_KEY)
+cat > .env <<'EOF'
+OPENAI_API_KEY=your_openai_api_key
+# Optional: TV control (defaults to false in compose)
+TV_CONTROL_ENABLED=false
+SAMSUNG_TV_IP_ADDRESS=
+SAMSUNG_TV_MAC_ADDRESS=
+EOF
+
+docker compose up --build
+# Web:   http://localhost:5173
+# API:   http://localhost:3000
+```
+
+Notes:
+- The web container runs the Vite dev server and proxies `/api` to `http://server:3000` inside the compose network.
+- To enable real TV control, set `TV_CONTROL_ENABLED=true` and provide TV IP/MAC in your top-level `.env`.
+- For a production web image, build static assets (`npm run build`) and serve `web/dist` via Nginx or your CDN.
 
 ## Notes
 
