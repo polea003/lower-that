@@ -37,6 +37,7 @@ function App() {
   )
   const [lastImageUrl, setLastImageUrl] = useState<string | null>(null)
   const [log, setLog] = useState<LogEntry[]>([])
+  const [showLastCapture, setShowLastCapture] = useState(false)
 
   useEffect(() => {
     let stream: MediaStream | null = null
@@ -113,7 +114,6 @@ function App() {
         <IconButton
           aria-label="Toggle color mode"
           onClick={() => {
-            console.log({ mode })
             mode === 'light' ? setMode('dark') : setMode('light')
           }}
         >
@@ -125,15 +125,19 @@ function App() {
           <Card>
             <CardHeader title="Webcam" />
             <CardContent>
-              <Box className="flex items-center gap-2 mb-3">
+              <Box className="mb-2">
                 <TextField
                   fullWidth
                   label="Preferred content description"
                   value={contentDescription}
                   onChange={(e) => setContentDescription(e.target.value)}
+                  multiline
+                  minRows={3}
                 />
+              </Box>
+              <Box className="mb-3">
                 <Button
-                  variant={running ? 'contained' : 'outlined'}
+                  variant='contained'
                   color={running ? 'error' : 'primary'}
                   startIcon={running ? <StopCircleIcon /> : <CameraAltIcon />}
                   onClick={() => setRunning((r) => !r)}
@@ -143,19 +147,29 @@ function App() {
               </Box>
               <video ref={videoRef} className="w-full rounded" muted playsInline />
               <canvas ref={canvasRef} className="hidden" />
+              <Box className="mt-3">
+                <Button
+                  variant="text"
+                  onClick={() => setShowLastCapture((s) => !s)}
+                >
+                  {showLastCapture ? 'Hide last capture' : 'View last capture'}
+                </Button>
+              </Box>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader title="Last Capture" />
-            <CardContent>
-              {lastImageUrl ? (
-                <img src={lastImageUrl} alt="Last capture" className="w-full rounded" />
-              ) : (
-                <Typography variant="body2" color="text.secondary">No capture yet.</Typography>
-              )}
-            </CardContent>
-          </Card>
+          {showLastCapture && (
+            <Card>
+              <CardHeader title="Last Capture" />
+              <CardContent>
+                {lastImageUrl ? (
+                  <img src={lastImageUrl} alt="Last capture" className="w-full rounded" />
+                ) : (
+                  <Typography variant="body2" color="text.secondary">No capture yet.</Typography>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </Stack>
 
         <Paper className="p-3 h-full max-h-[70vh] overflow-y-auto">
