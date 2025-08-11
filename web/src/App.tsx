@@ -31,7 +31,7 @@ type LogEntry = {
 function App() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const [running, setRunning] = useState(true)
+  const [running, setRunning] = useState(false)
   const [contentDescription, setContentDescription] = useState(
     'sporting event or related broadcast pieces like interviews and analysis'
   )

@@ -27,6 +27,6 @@ describe('App', () => {
     expect(
       screen.getByRole('textbox', { name: /preferred content description/i })
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /stop/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /start/i })).toBeInTheDocument()
   })
 })

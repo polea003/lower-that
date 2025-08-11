@@ -62,11 +62,11 @@ describe('App behavior', () => {
     )
 
     // Button starts as Stop; click to pause then click to resume
-    const btn = await screen.findByRole('button', { name: /stop/i })
-    await userEvent.click(btn)
-    expect(btn).toHaveTextContent(/start/i)
+    const btn = await screen.findByRole('button', { name: /start/i })
     await userEvent.click(btn)
     expect(btn).toHaveTextContent(/stop/i)
+    await userEvent.click(btn)
+    expect(btn).toHaveTextContent(/start/i)
 
     // Expect analyzeImage called and log rendered
     await waitFor(() => {
