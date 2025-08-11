@@ -110,7 +110,7 @@ function App() {
   return (
     <Container maxWidth="lg" className="p-4">
       <Box className="mb-4" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h4">Lower That — Web</Typography>
+        <Typography variant="h4">📺 Lower That</Typography>
         <IconButton
           aria-label="Toggle color mode"
           onClick={() => {
@@ -120,10 +120,16 @@ function App() {
           {mode === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
         </IconButton>
       </Box>
+      <Typography variant="body1" color="text.secondary" className="mb-4">
+        Analyze webcam snapshots to detect on-screen content and automatically suggest muting your Samsung TV.
+      </Typography>
       <div className="grid gap-4 md:grid-cols-2">
         <Stack spacing={2}>
           <Card>
-            <CardHeader title="Webcam" />
+            <CardHeader
+              title="Webcam"
+              subheader="Describe the content to watch for, then start capture (every 5s)."
+            />
             <CardContent>
               <Box className="mb-2">
                 <TextField
@@ -133,6 +139,7 @@ function App() {
                   onChange={(e) => setContentDescription(e.target.value)}
                   multiline
                   minRows={3}
+                  helperText="What should the analyzer look for (e.g., sporting event, news ticker)?"
                 />
               </Box>
               <Box className="mb-3">
@@ -144,6 +151,9 @@ function App() {
                 >
                   {running ? 'Stop' : 'Start'}
                 </Button>
+                <Typography variant="caption" color="text.secondary" className="ml-2">
+                  Captures a frame every 5 seconds and sends it to the server for analysis.
+                </Typography>
               </Box>
               <video ref={videoRef} className="w-full rounded" muted playsInline />
               <canvas ref={canvasRef} className="hidden" />
@@ -160,7 +170,10 @@ function App() {
 
           {showLastCapture && (
             <Card>
-              <CardHeader title="Last Capture" />
+              <CardHeader
+                title="Last Capture"
+                subheader="The most recent frame sent to the analyzer."
+              />
               <CardContent>
                 {lastImageUrl ? (
                   <img src={lastImageUrl} alt="Last capture" className="w-full rounded" />
@@ -174,6 +187,9 @@ function App() {
 
         <Paper className="p-3 h-full max-h-[70vh] overflow-y-auto">
           <Typography variant="h6" className="mb-2">Results Log</Typography>
+          <Typography variant="body2" color="text.secondary" className="mb-2">
+            Shows each analysis with a short description and whether the TV should be muted.
+          </Typography>
           <Stack spacing={1}>
             {log.length === 0 && (
               <Typography variant="body2" color="text.secondary">No results yet.</Typography>

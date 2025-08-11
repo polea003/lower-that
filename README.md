@@ -101,20 +101,14 @@ Quick start:
 
 ```bash
 # from repo root
-cp server/env.example server/.env # optional reference
+# Use the provided example to create your Compose env file
+cp env.example .env
 
-# Provide env for the server (at minimum OPENAI_API_KEY)
-cat > .env <<'EOF'
-OPENAI_API_KEY=your_openai_api_key
-# Optional: TV control (defaults to false in compose)
-TV_CONTROL_ENABLED=false
-SAMSUNG_TV_IP_ADDRESS=
-SAMSUNG_TV_MAC_ADDRESS=
-EOF
+# Edit .env and set your values (at minimum OPENAI_API_KEY).
+# If enabling TV control, set TV_CONTROL_ENABLED=true and provide
+# SAMSUNG_TV_IP_ADDRESS and SAMSUNG_TV_MAC_ADDRESS.
 
 docker compose up --build
-# Web:   http://localhost:5173
-# API:   http://localhost:3000
 ```
 
 Notes:
@@ -133,4 +127,4 @@ Notes:
 PRs welcome! Please include:
 - Rationale and scope of changes
 - Testing steps and logs (use `LOG_LEVEL=debug` where helpful)
-- Any env var changes (update `server/env.example`)
+- Any env var changes (update `env.example`)
