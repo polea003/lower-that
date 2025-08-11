@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import App from '../src/App'
+import { ThemeProvider, CssBaseline } from '@mui/material'
+import { createTheme } from '@mui/material/styles'
 
 describe('App', () => {
   beforeAll(() => {
@@ -13,7 +15,12 @@ describe('App', () => {
   })
 
   it('renders heading and controls', () => {
-    render(<App />)
+    render(
+      <ThemeProvider theme={createTheme({ colorSchemes: { dark: true } })}>
+        <CssBaseline />
+        <App />
+      </ThemeProvider>
+    )
     expect(
       screen.getByRole('heading', { name: /lower that — web/i })
     ).toBeInTheDocument()
@@ -23,4 +30,3 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /stop/i })).toBeInTheDocument()
   })
 })
-

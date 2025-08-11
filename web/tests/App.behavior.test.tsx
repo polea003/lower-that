@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
 import * as api from '../src/api/client'
 import App from '../src/App'
+import { ThemeProvider, CssBaseline } from '@mui/material'
+import { createTheme } from '@mui/material/styles'
 
 describe('App behavior', () => {
   beforeAll(() => {
@@ -52,7 +54,12 @@ describe('App behavior', () => {
       should_mute_tv: true,
     })
 
-    render(<App />)
+    render(
+      <ThemeProvider theme={createTheme({ colorSchemes: { dark: true } })}>
+        <CssBaseline />
+        <App />
+      </ThemeProvider>
+    )
 
     // Button starts as Stop; click to pause then click to resume
     const btn = await screen.findByRole('button', { name: /stop/i })
@@ -74,4 +81,3 @@ describe('App behavior', () => {
     global.setInterval = realSetInterval
   })
 })
-

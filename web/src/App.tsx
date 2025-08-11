@@ -6,6 +6,7 @@ import {
   CardContent,
   CardHeader,
   Container,
+  IconButton,
   Paper,
   Stack,
   TextField,
@@ -13,6 +14,9 @@ import {
 } from '@mui/material'
 import CameraAltIcon from '@mui/icons-material/CameraAlt'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
+import DarkModeIcon from '@mui/icons-material/DarkMode'
+import LightModeIcon from '@mui/icons-material/LightMode'
+import { useColorScheme } from '@mui/material/styles';
 import { analyzeImage, type AnalyzeResponse } from './api/client'
 
 const WIDTH = 512
@@ -97,9 +101,25 @@ function App() {
     return () => clearInterval(id)
   }, [running, contentDescription])
 
+  const { mode, setMode } = useColorScheme();
+  if (!mode) {
+    return null;
+  }
+
   return (
     <Container maxWidth="lg" className="p-4">
-      <Typography variant="h4" className="mb-4">Lower That — Web</Typography>
+      <Box className="mb-4" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h4">Lower That — Web</Typography>
+        <IconButton
+          aria-label="Toggle color mode"
+          onClick={() => {
+            console.log({ mode })
+            mode === 'light' ? setMode('dark') : setMode('light')
+          }}
+        >
+          {mode === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
+        </IconButton>
+      </Box>
       <div className="grid gap-4 md:grid-cols-2">
         <Stack spacing={2}>
           <Card>
