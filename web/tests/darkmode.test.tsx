@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
 import App from '../src/App'
@@ -60,7 +60,7 @@ describe('Dark mode — toggle control', () => {
     // no-op
   })
 
-  it('renders a top-right icon button to toggle theme and flips theme on click', async () => {
+  it('renders a top-right icon button to toggle theme and flips icon on click', async () => {
     mockPrefersColorScheme(false)
     render(
       <ThemeProvider theme={createTheme({ colorSchemes: { dark: true } })}>
@@ -72,12 +72,16 @@ describe('Dark mode — toggle control', () => {
 
     const btn = screen.getByRole('button', { name: /toggle color mode/i })
     expect(screen.getByTestId('resolved-mode').textContent).toBe('light')
-    // First click selects explicit light when starting from system
+    // Capture initial icon test id (DarkModeIcon when light is active)
+    const initialIconEl = within(btn).getByTestId(/(DarkModeIcon|LightModeIcon)/)
+    const initialIconId = initialIconEl.getAttribute('data-testid')
+    // First click toggles App's local palette from light -> dark
     await userEvent.click(btn)
-    // It may still be light after first click
-    expect(screen.getByTestId('resolved-mode').textContent).toBe('light')
-    // Second click selects dark
+    const afterFirstIconId = within(btn).getByTestId(/(DarkModeIcon|LightModeIcon)/).getAttribute('data-testid')
+    expect(afterFirstIconId).not.toBe(initialIconId)
+    // Second click toggles back to initial icon
     await userEvent.click(btn)
-    expect(screen.getByTestId('resolved-mode').textContent).toBe('dark')
+    const afterSecondIconId = within(btn).getByTestId(/(DarkModeIcon|LightModeIcon)/).getAttribute('data-testid')
+    expect(afterSecondIconId).toBe(initialIconId)
   })
 })

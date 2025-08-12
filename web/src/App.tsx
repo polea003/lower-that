@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { 
   Box,
   Button,
@@ -11,13 +11,17 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
 } from '@mui/material'
+import type { PaletteMode } from '@mui/material/styles'
 import CameraAltIcon from '@mui/icons-material/CameraAlt'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import LightModeIcon from '@mui/icons-material/LightMode'
-import { useColorScheme } from '@mui/material/styles';
 import { analyzeImage, type AnalyzeResponse } from './api/client'
+import { CssBaseline } from '@mui/material'
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
 
 const WIDTH = 512
 const HEIGHT = 288
@@ -29,6 +33,15 @@ type LogEntry = {
 }
 
 function App() {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
+  const [mode, setMode] = useState<PaletteMode>(prefersDarkMode ? 'dark' : 'light')
+  const theme = useMemo(() => {
+    return createTheme({
+      palette: {
+        mode
+      }
+    })
+  }, [mode])
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [running, setRunning] = useState(false)
@@ -102,111 +115,109 @@ function App() {
     return () => clearInterval(id)
   }, [running, contentDescription])
 
-  const { mode, setMode } = useColorScheme();
-  if (!mode) {
-    return null;
-  }
-
   return (
-    <Container maxWidth="lg" className="p-4">
-      <Box className="mb-4" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h4">📺 Lower That</Typography>
-        <IconButton
-          aria-label="Toggle color mode"
-          onClick={() => {
-            mode === 'light' ? setMode('dark') : setMode('light')
-          }}
-        >
-          {mode === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
-        </IconButton>
-      </Box>
-      <Typography variant="body1" color="text.secondary" className="mb-4">
-        Analyze webcam snapshots to detect on-screen content and automatically suggest muting your Samsung TV.
-      </Typography>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Stack spacing={2}>
-          <Card>
-            <CardHeader
-              title="Webcam"
-              subheader="Describe the content to watch for, then start capture (every 5s)."
-            />
-            <CardContent>
-              <Box className="mb-2">
-                <TextField
-                  fullWidth
-                  label="Preferred content description"
-                  value={contentDescription}
-                  onChange={(e) => setContentDescription(e.target.value)}
-                  multiline
-                  minRows={3}
-                  helperText="What should the analyzer look for (e.g., sporting event, news ticker)?"
-                />
-              </Box>
-              <Box className="mb-3">
-                <Button
-                  variant='contained'
-                  color={running ? 'error' : 'primary'}
-                  startIcon={running ? <StopCircleIcon /> : <CameraAltIcon />}
-                  onClick={() => setRunning((r) => !r)}
-                >
-                  {running ? 'Stop' : 'Start'}
-                </Button>
-                <Typography variant="caption" color="text.secondary" className="ml-2">
-                  Captures a frame every 5 seconds and sends it to the server for analysis.
-                </Typography>
-              </Box>
-              <video ref={videoRef} className="w-full rounded" muted playsInline />
-              <canvas ref={canvasRef} className="hidden" />
-              <Box className="mt-3">
-                <Button
-                  variant="text"
-                  onClick={() => setShowLastCapture((s) => !s)}
-                >
-                  {showLastCapture ? 'Hide last capture' : 'View last capture'}
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-
-          {showLastCapture && (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Container maxWidth="lg" className="p-4">
+        <Box className="mb-4" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h4">📺 Lower That</Typography>
+          <IconButton
+            aria-label="Toggle color mode"
+            onClick={() => {
+              mode === 'light' ? setMode('dark') : setMode('light')
+            }}
+          >
+            {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+          </IconButton>
+        </Box>
+        <Typography variant="body1" color="text.secondary" className="mb-4">
+          Analyze webcam snapshots to detect on-screen content and automatically suggest muting your Samsung TV.
+        </Typography>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Stack spacing={2}>
             <Card>
               <CardHeader
-                title="Last Capture"
-                subheader="The most recent frame sent to the analyzer."
+                title="Webcam"
+                subheader="Describe the content to watch for, then start capture (every 5s)."
               />
               <CardContent>
-                {lastImageUrl ? (
-                  <img src={lastImageUrl} alt="Last capture" className="w-full rounded" />
-                ) : (
-                  <Typography variant="body2" color="text.secondary">No capture yet.</Typography>
-                )}
+                <Box className="mb-2">
+                  <TextField
+                    fullWidth
+                    label="Preferred content description"
+                    value={contentDescription}
+                    onChange={(e) => setContentDescription(e.target.value)}
+                    multiline
+                    minRows={3}
+                    helperText="What should the analyzer look for (e.g., sporting event, news ticker)?"
+                  />
+                </Box>
+                <Box className="mb-3">
+                  <Button
+                    variant='contained'
+                    color={running ? 'error' : 'primary'}
+                    startIcon={running ? <StopCircleIcon /> : <CameraAltIcon />}
+                    onClick={() => setRunning((r) => !r)}
+                  >
+                    {running ? 'Stop' : 'Start'}
+                  </Button>
+                  <Typography variant="caption" color="text.secondary" className="ml-2">
+                    Captures a frame every 5 seconds and sends it to the server for analysis.
+                  </Typography>
+                </Box>
+                <video ref={videoRef} className="w-full rounded" muted playsInline />
+                <canvas ref={canvasRef} className="hidden" />
+                <Box className="mt-3">
+                  <Button
+                    variant="text"
+                    onClick={() => setShowLastCapture((s) => !s)}
+                  >
+                    {showLastCapture ? 'Hide last capture' : 'View last capture'}
+                  </Button>
+                </Box>
               </CardContent>
             </Card>
-          )}
-        </Stack>
 
-        <Paper className="p-3 h-full max-h-[70vh] overflow-y-auto">
-          <Typography variant="h6" className="mb-2">Results Log</Typography>
-          <Typography variant="body2" color="text.secondary" className="mb-2">
-            Shows each analysis with a short description and whether the TV should be muted.
-          </Typography>
-          <Stack spacing={1}>
-            {log.length === 0 && (
-              <Typography variant="body2" color="text.secondary">No results yet.</Typography>
+            {showLastCapture && (
+              <Card>
+                <CardHeader
+                  title="Last Capture"
+                  subheader="The most recent frame sent to the analyzer."
+                />
+                <CardContent>
+                  {lastImageUrl ? (
+                    <img src={lastImageUrl} alt="Last capture" className="w-full rounded" />
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">No capture yet.</Typography>
+                  )}
+                </CardContent>
+              </Card>
             )}
-            {log.map((entry, idx) => (
-              <Box key={idx} className="border rounded p-2">
-                <Typography variant="caption" color="text.secondary">{new Date(entry.timestamp).toLocaleTimeString()}</Typography>
-                <Typography variant="body2" className="mt-1">{entry.result.tv_content_description}</Typography>
-                <Typography variant="body2" color={entry.result.should_mute_tv ? 'error' : 'success.main'}>
-                  should_mute_tv: {String(entry.result.should_mute_tv)}
-                </Typography>
-              </Box>
-            ))}
           </Stack>
-        </Paper>
-      </div>
-    </Container>
+
+          <Paper className="p-3 h-full max-h-[70vh] overflow-y-auto">
+            <Typography variant="h6" className="mb-2">Results Log</Typography>
+            <Typography variant="body2" color="text.secondary" className="mb-2">
+              Shows each analysis with a short description and whether the TV should be muted.
+            </Typography>
+            <Stack spacing={1}>
+              {log.length === 0 && (
+                <Typography variant="body2" color="text.secondary">No results yet.</Typography>
+              )}
+              {log.map((entry, idx) => (
+                <Box key={idx} className="border rounded p-2">
+                  <Typography variant="caption" color="text.secondary">{new Date(entry.timestamp).toLocaleTimeString()}</Typography>
+                  <Typography variant="body2" className="mt-1">{entry.result.tv_content_description}</Typography>
+                  <Typography variant="body2" color={entry.result.should_mute_tv ? 'error' : 'success.main'}>
+                    should_mute_tv: {String(entry.result.should_mute_tv)}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          </Paper>
+        </div>
+      </Container>
+    </ThemeProvider>
   )
 }
 
