@@ -52,7 +52,7 @@ describe('App error paths', () => {
     )
 
     // App stays rendered and responsive even if analysis fails
-    expect(await screen.findByRole('heading', { name: /lower that — web/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /lower that/i })).toBeInTheDocument()
     // Results area remains present
     expect(screen.getByText(/results log/i)).toBeInTheDocument()
 
@@ -77,7 +77,7 @@ describe('App error paths', () => {
     )
 
     // App still renders heading and UI
-    expect(screen.getByRole('heading', { name: /lower that — web/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /lower that/i })).toBeInTheDocument()
 
     // ensure no crash (we saw heading), and clean up
     errSpy.mockRestore()

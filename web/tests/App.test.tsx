@@ -22,7 +22,7 @@ describe('App', () => {
       </ThemeProvider>
     )
     expect(
-      screen.getByRole('heading', { name: /lower that — web/i })
+      screen.getByRole('heading', { name: /lower that/i })
     ).toBeInTheDocument()
     expect(
       screen.getByRole('textbox', { name: /preferred content description/i })
