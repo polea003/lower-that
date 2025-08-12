@@ -130,7 +130,7 @@ function App() {
             {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
         </Box>
-        <Typography variant="body1" color="text.secondary" className="mb-4">
+        <Typography variant="body1" color="text.secondary" className="pb-4">
           Analyze webcam snapshots to detect on-screen content and automatically suggest muting your Samsung TV.
         </Typography>
         <div className="grid gap-4 md:grid-cols-2">
@@ -161,8 +161,8 @@ function App() {
                   >
                     {running ? 'Stop' : 'Start'}
                   </Button>
-                  <Typography variant="caption" color="text.secondary" className="ml-2">
-                    Captures a frame every 5 seconds and sends it to the server for analysis.
+                  <Typography variant="caption" color="text.secondary" className="pl-2">
+                    Captures a frame every 5 seconds for analysis.
                   </Typography>
                 </Box>
                 <video ref={videoRef} className="w-full rounded" muted playsInline />
