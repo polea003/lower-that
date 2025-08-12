@@ -2,6 +2,26 @@
 
 Mute/unmute your Samsung TV based on what your webcam sees. The web app captures an image every 5 seconds, the server analyzes it with an OpenAI vision model, and the server decides whether to toggle mute.
 
+## Quickstart (Docker)
+
+Use Docker Compose to run both services: the Express API and the web app.
+
+Quick start:
+
+```bash
+# from repo root
+# Use the provided example to create your Compose env file
+cp env.example .env
+
+# Edit .env and set your values (at minimum OPENAI_API_KEY).
+# If enabling TV control, set TV_CONTROL_ENABLED=true and provide
+# SAMSUNG_TV_IP_ADDRESS and SAMSUNG_TV_MAC_ADDRESS.
+
+docker compose up -d --build
+```
+
+Once containers are running, access the app at `http://localhost:5173`
+
 ## Overview
 
 - Web client (Vite + React + Tailwind + MUI) shows the webcam, lets you set a preferred content description, and streams snapshots to the server.
@@ -24,7 +44,8 @@ Mute/unmute your Samsung TV based on what your webcam sees. The web app captures
   - `src/api/client.ts`: client for `/api/analyze`
   - `vite.config.ts`: dev proxy `/api` → target from `VITE_API_PROXY_TARGET` (defaults to `http://localhost:3000`)
 
-## Setup
+
+## Setup (development)
 
 ### 1) Server configuration
 
@@ -82,39 +103,13 @@ The page:
 - Captures a JPEG every 5s and posts to `/api/analyze`
 - Displays the last capture and a rolling results log
 
-## Testing
+### 3) Testing
 
 - Server: `cd server && npm test` (Vitest + Supertest; coverage enabled)
 - Web (unit): `cd web && npm test` (Vitest + RTL + MSW; coverage enabled)
 - Web (e2e): `cd web && npx playwright install && npm run e2e`
 
-## Deployment
-
-- Server: run `node server/src/server.js` behind a process manager (PM2/systemd/Docker). Expose port 3000 (or set `PORT`).
-- Web: build with `cd web && npm run build` and serve the static `dist/` via your web server/CDN. Configure your reverse proxy to route `/api` to the server.
-
-## Docker
-
-Two containers are provided via Docker Compose: one for the Express server and one for the Vite dev server.
-
-Quick start:
-
-```bash
-# from repo root
-# Use the provided example to create your Compose env file
-cp env.example .env
-
-# Edit .env and set your values (at minimum OPENAI_API_KEY).
-# If enabling TV control, set TV_CONTROL_ENABLED=true and provide
-# SAMSUNG_TV_IP_ADDRESS and SAMSUNG_TV_MAC_ADDRESS.
-
-docker compose up --build
-```
-
-Notes:
-- The web container runs the Vite dev server and proxies `/api` to `http://server:3000` inside the compose network.
-- To enable real TV control, set `TV_CONTROL_ENABLED=true` and provide TV IP/MAC in your top-level `.env`.
-- For a production web image, build static assets (`npm run build`) and serve `web/dist` via Nginx or your CDN.
+ 
 
 ## Notes
 
