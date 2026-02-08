@@ -103,7 +103,7 @@ function App() {
           { timestamp: new Date().toISOString(), result },
           ...prev,
         ].slice(0, 50))
-      } catch (e) {
+      } catch {
         setLog((prev) => [
           { timestamp: new Date().toISOString(), result: { tv_content_description: 'Error', should_mute_tv: false } },
           ...prev,
@@ -124,7 +124,7 @@ function App() {
           <IconButton
             aria-label="Toggle color mode"
             onClick={() => {
-              mode === 'light' ? setMode('dark') : setMode('light')
+              setMode((prev) => (prev === 'light' ? 'dark' : 'light'))
             }}
           >
             {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}

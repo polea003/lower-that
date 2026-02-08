@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 import * as api from '../src/api/client'
 import App from '../src/App'
@@ -34,7 +34,9 @@ describe('App error paths', () => {
       result: string | ArrayBuffer | null = 'data:image/jpeg;base64,ZmFrZQ=='
       onloadend: null | (() => void) = null
       onerror: null | (() => void) = null
-      readAsDataURL() { this.onloadend && this.onloadend() }
+      readAsDataURL() {
+        if (this.onloadend) this.onloadend()
+      }
     } as any
 
     // Make interval fire immediately

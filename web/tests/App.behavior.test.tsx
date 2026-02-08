@@ -35,7 +35,7 @@ describe('App behavior', () => {
       onerror: null | (() => void) = null
       readAsDataURL() {
         // Immediately trigger load end
-        this.onloadend && this.onloadend()
+        if (this.onloadend) this.onloadend()
       }
     } as any
   })
