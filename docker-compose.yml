@@ -1,5 +1,6 @@
 services:
   server:
+    profiles: ["express"]
     build:
       context: ./server
     container_name: lower-that-server
@@ -11,16 +12,34 @@ services:
       SAMSUNG_TV_IP_ADDRESS: ${SAMSUNG_TV_IP_ADDRESS:-}
       SAMSUNG_TV_MAC_ADDRESS: ${SAMSUNG_TV_MAC_ADDRESS:-}
       PORT: 3000
+    networks:
+      default:
+        aliases:
+          - backend
+
+  fastapi-server:
+    profiles: ["fastapi"]
+    build:
+      context: ./fastapi-server
+    container_name: lower-that-fastapi-server
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      TV_CONTROL_ENABLED: ${TV_CONTROL_ENABLED:-false}
+      SAMSUNG_TV_IP_ADDRESS: ${SAMSUNG_TV_IP_ADDRESS:-}
+      SAMSUNG_TV_MAC_ADDRESS: ${SAMSUNG_TV_MAC_ADDRESS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      PORT: 3000
+    networks:
+      default:
+        aliases:
+          - backend
 
   web:
     build:
       context: ./web
     container_name: lower-that-web
     environment:
-      # Point Vite dev proxy at the server service
-      VITE_API_PROXY_TARGET: http://server:3000
+      # The active backend service binds this shared alias.
+      VITE_API_PROXY_TARGET: http://backend:3000
     ports:
       - '5173:5173'
-    depends_on:
-      - server
-

@@ -11,10 +11,9 @@ RUN npm ci
 COPY . .
 
 ENV NODE_ENV=development \
-    VITE_API_PROXY_TARGET=http://server:3000
+    VITE_API_PROXY_TARGET=http://backend:3000
 
 EXPOSE 5173
 
 # Run Vite dev server, binding to all interfaces
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-
